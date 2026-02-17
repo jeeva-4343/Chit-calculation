@@ -11,6 +11,13 @@ export default function Page() {
 
   const [result, setResult] = useState<any>(null);
 
+  // ✅ Professional Money Formatter
+  const formatMoney = (num: number) =>
+    num.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
   const calculate = () => {
     const T = Number(total);
     const M = Number(members);
@@ -24,49 +31,20 @@ export default function Page() {
       return;
     }
 
-    // ✅ BASIC VALUES
     const installment = T / M;
     const totalAuctions = M;
     const totalYears = totalAuctions / APY;
 
-    // ✅ DISCOUNT LOGIC
     const discount = T - A;
     const remainingAuctions = M - N;
-    const nonPrized = remainingAuctions;
-
-    const dividend = discount / nonPrized;
+    const dividend = discount / remainingAuctions;
     const remainingMemberPay = installment - dividend;
 
-    // ✅ WINNER
     const winnerCash = A - installment;
     const winnerFuturePay = remainingAuctions * installment;
 
-    // ✅ REMAINING MEMBERS
-    const remainingMemberFuturePay =
-      remainingAuctions * remainingMemberPay;
-
-    const explanation = `
-சீட்டு மொத்தம் ₹${T.toLocaleString()}.
-மொத்த உறுப்பினர்கள் ${M} பேர்.
-
-மொத்த ஏலங்கள் ${totalAuctions}.
-மொத்த காலம் ${totalYears.toFixed(1)} வருடம்.
-
-நடப்பு ஏலம் ${N}.
-மீதமுள்ள ஏலங்கள் ${remainingAuctions}.
-
-சீட்டு எடுத்தவர்:
-👉 கையில் கிடைத்தது ₹${Math.round(winnerCash).toLocaleString()}
-👉 இனி கட்ட வேண்டியது ₹${winnerFuturePay.toLocaleString()}
-
-சீட்டு எடுக்காதவர்கள்:
-👉 ஒருவருக்கு லாபம் ₹${Math.round(dividend).toLocaleString()}
-👉 இனி தவணை ₹${Math.round(remainingMemberPay).toLocaleString()}
-👉 மொத்தம் கட்டுவது ₹${Math.round(remainingMemberFuturePay).toLocaleString()}
-`;
-
     setResult({
-      installment,
+      installment, // ✅ IMPORTANT
       totalAuctions,
       totalYears,
       remainingAuctions,
@@ -74,100 +52,143 @@ export default function Page() {
       winnerFuturePay,
       dividend,
       remainingMemberPay,
-      remainingMemberFuturePay,
       commission,
-      explanation,
     });
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black text-white">
       <div className="max-w-md mx-auto p-3 space-y-4">
 
         {/* HEADER */}
-        <div>
-          <h1 className="text-xl font-bold text-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
             சீட்டு கணக்குப் பொறி
           </h1>
-          <p className="text-center text-gray-500 text-xs">
+          <p className="text-gray-500 text-xs">
             கிராம சீட்டு கணக்கு
+          </p>
+           <p className="text-yellow-400 text-[10px] mt-1">
+            உதவிக்காக மட்டும்
           </p>
         </div>
 
-        {/* INPUT BOX */}
-        <div className="bg-gray-900 rounded-2xl p-3 border border-gray-800 space-y-3">
+        {/* INPUT CARD */}
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-4
+                        border border-white/10 space-y-3 shadow-xl">
 
-          <Input label="சீட்டு மொத்தம்" value={total} onChange={setTotal} />
-          <Input label="உறுப்பினர்கள்" value={members} onChange={setMembers} />
-          <Input label="நடப்பு ஏலம்" value={auctionNumber} onChange={setAuctionNumber} />
-          <Input label="ஏலம் தொகை" value={auctionAmount} onChange={setAuctionAmount} />
-
-          <Input
-            label="Yearக்கு ஏலம்"
-            value={auctionsPerYear}
-            onChange={setAuctionsPerYear}
-          />
+          <Input label="சீட்டு மொத்தம்" value={total} onChange={setTotal} pattern="[0-9]*"/>
+          <Input label="உறுப்பினர்கள்" value={members} onChange={setMembers} pattern="[0-9]*"/>
+          <Input label="நடப்பு ஏலம்" value={auctionNumber} onChange={setAuctionNumber} pattern="[0-9]*"/>
+          <Input label="ஏலம் தொகை" value={auctionAmount} onChange={setAuctionAmount} pattern="[0-9]*"/>
+          <Input label="Yearக்கு ஏலம்" value={auctionsPerYear} onChange={setAuctionsPerYear} pattern="[0-9]*"/>
         </div>
 
         {/* BUTTON */}
         <button
           onClick={calculate}
-          className="w-full bg-blue-600 text-white text-lg p-3 rounded-2xl"
+          className="w-full bg-gradient-to-r from-blue-600 to-cyan-500
+                     text-white text-lg p-3 rounded-2xl font-semibold
+                     transition-all hover:scale-[1.03] active:scale-95"
         >
           கணக்குப் பார்
         </button>
 
         {/* RESULT */}
-        {result && (
-          <div className="bg-gray-900 rounded-2xl p-3 border border-gray-800 space-y-2">
+        <div
+          className={`transition-all duration-500 overflow-hidden
+                     ${result ? "opacity-100 max-h-[600px]" : "opacity-0 max-h-0"}`}
+        >
+          {result && (
+            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-4
+                            border border-white/10 space-y-2 shadow-xl mt-2">
 
-            <Row label="மொத்த ஏலம் தொகை" value={`₹ ${Number(total).toLocaleString()}`} />
-            <Row label="மொத்த ஏலங்கள்" value={result.totalAuctions} />
-            <Row label="மொத்த வருடம்" value={result.totalYears.toFixed(1)} />
-            <Row label="மீதமுள்ள ஏலங்கள்" value={result.remainingAuctions} />
+              <Row label="மொத்த ஏலம் தொகை" value={`₹ ${formatMoney(Number(total))}`} />
+              <Row label="மொத்த ஏலங்கள்" value={result.totalAuctions} />
+              <Row label="மொத்த வருடம்" value={result.totalYears.toFixed(1)} />
+              <Row label="மீதமுள்ள ஏலங்கள்" value={result.remainingAuctions} />
 
-            <Divider />
+              <Divider />
 
-            <Row label="சீட்டு எடுத்தவர் கையில்" value={`₹ ${Math.round(result.winnerCash).toLocaleString()}`} />
-            <Row
-              label="கமிஷன்"
-              value={`₹ ${result.commission.toLocaleString()}`}
-            />
-            <Row label="சீட்டு எடுத்தவர் இனி கட்டுவது" value={`₹ ${result.winnerFuturePay.toLocaleString()}`} />
+              <p className="text-sm text-blue-400">👉 சீட்டு எடுத்தவர்</p>
 
-            <Divider />
+              <Row
+                label="ஏலம் போனது"
+                value={`₹ ${formatMoney(Number(auctionAmount))}`}
+              />
 
-            <Row label="ஒருவருக்கு லாபம்" value={`₹ ${Math.round(result.dividend).toLocaleString()}`} />
-            <Row label="இனி தவணை" value={`₹ ${Math.round(result.remainingMemberPay).toLocaleString()}`} />
-            <Row label="மொத்தம் கட்டுவது" value={`₹ ${Math.round(result.remainingMemberFuturePay).toLocaleString()}`} />
-          </div>
-        )}
+              <Row
+                label="போட வேண்டியது"
+                value={`₹ ${formatMoney(result.installment)}`}
+              />
 
-        {/* EXPLANATION */}
-        {result && (
-          <div className="bg-gray-900 rounded-2xl p-3 border border-gray-800">
-            <p className="text-sm whitespace-pre-line text-gray-300">
-              {result.explanation}
-            </p>
-          </div>
-        )}
+              <Row
+                label="கையில் கிடைத்தது"
+                value={`₹ ${formatMoney(result.winnerCash)}`}
+              />
+
+              <Divider />
+
+              <Row
+                label="இனி கட்டவேண்டியது (மோத்தம்)"
+                value={`₹ ${formatMoney(result.winnerFuturePay)}`}
+              />
+
+              <Divider />
+
+              <p className="text-sm text-cyan-400">👉 சீட்டு எடுக்காதவர்கள்</p>
+
+              <Row
+                label="கமிஷன்"
+                value={`₹ ${formatMoney(result.commission)}`}
+              />
+
+              <Row
+                label="ஒருவருக்கு லாபம்"
+                value={`₹ ${formatMoney(result.dividend)}`}
+              />
+
+              <Row
+                label="போட வேண்டியது"
+                value={`₹ ${formatMoney(result.remainingMemberPay)}`}
+              />
+            </div>
+          )}
+        </div>
 
       </div>
     </main>
   );
 }
 
-/* INPUT */
+/* ✅ INPUT WITH COMMA */
 function Input({ label, value, onChange }: any) {
+
+  const formatNumber = (val: string) => {
+    if (!val) return "";
+    return Number(val).toLocaleString("en-IN");
+  };
+
+  const handleChange = (e: any) => {
+    const raw = e.target.value.replace(/,/g, "");
+
+    if (!raw || /^[0-9]*$/.test(raw)) {
+      onChange(raw);
+    }
+  };
+
   return (
     <div>
       <label className="text-xs text-gray-400">{label}</label>
       <input
-        type="number"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full p-2 text-lg rounded-lg mt-1
-                   bg-gray-800 border border-gray-700 text-white"
+        type="text"
+        inputMode="numeric"
+        value={formatNumber(value)}
+        onChange={handleChange}
+        className="w-full p-2 text-lg rounded-xl mt-1
+                   bg-black/40 border border-white/10
+                   focus:border-blue-500
+                   outline-none"
       />
     </div>
   );
@@ -185,5 +206,5 @@ function Row({ label, value }: any) {
 
 /* DIVIDER */
 function Divider() {
-  return <div className="border-t border-gray-800 my-2"></div>;
+  return <div className="border-t border-white/10 my-2"></div>;
 }
